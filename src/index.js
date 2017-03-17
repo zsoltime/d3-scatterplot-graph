@@ -28,6 +28,11 @@ function visualize(data) {
   const graph = svg.append('g')
     .attr('transform', `translate(${margins.left}, ${margins.top})`);
 
+  // add the tooltip
+  const tooltip = d3.select('#graph')
+    .append('div')
+      .attr('class', 'tooltip');
+
   // set ranges and scale the range of data
   const scaleX = d3.scaleTime()
     .domain(d3.extent(data, d => (
@@ -83,6 +88,29 @@ function visualize(data) {
     .attr('r', 7)
     .attr('cx', d => scaleX((d.Seconds - offsetInSeconds) * 1000))
     .attr('cy', d => scaleY(d.Place))
+    .on('mouseover', (d) => {
+      const html = `
+      <p class="tooltip__header">
+        <span class="name">${d.Name}</span>
+        <span class="country">${d.Nationality}</span>
+        <span class="year">${d.Year}</span>
+        <span class="time">${d.Time}</span>
+      </p>
+      <p class="tooltip__footer">Doping: ${d.Doping || 'None'}</p>`;
+
+      tooltip.transition()
+        .duration(200)
+        .style('opacity', 1);
+      tooltip.html(html)
+        .style('transform', 'translateY(0)');
+    })
+    .on('mouseout', () => {
+      tooltip.transition()
+        .duration(200)
+        .style('opacity', 0);
+      tooltip.html('')
+        .style('transform', 'translateY(-100%)');
+    });
   circles.append('text')
     .attr('class', 'graph__name')
     .attr('x', d => scaleX((d.Seconds - offsetInSeconds) * 1000) + 10)
