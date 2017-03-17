@@ -11,7 +11,7 @@ function visualize(data) {
     left: 40,
   };
   const canvasWidth = 800;
-  const canvasHeight = 400;
+  const canvasHeight = 500;
   const width = canvasWidth - margins.right - margins.left;
   const height = canvasHeight - margins.top - margins.bottom;
   const formatTime = d3.timeFormat('%M:%S');
@@ -30,14 +30,13 @@ function visualize(data) {
 
   // set ranges and scale the range of data
   const scaleX = d3.scaleTime()
-    .domain([
-      d3.max(data, d => (d.Seconds - offsetInSeconds) * 1000) + 5000,
-      0,
-    ])
+    .domain(d3.extent(data, d => (
+      d.Seconds - offsetInSeconds) * 1000
+    ).reverse())
     .rangeRound([0, width]);
 
   const scaleY = d3.scaleLinear()
-    .domain(d3.extent(data, d => d.Place))
+    .domain(d3.extent(data, d => d.Place).reverse())
     .range([height, 0]);
 
   // define axes
@@ -68,6 +67,27 @@ function visualize(data) {
       .attr('transform', 'rotate(-90)')
       .attr('y', 15)
       .text('Place');
+
+  // add the circles
+  const circles = graph.append('g')
+    .attr('class', 'graph__circles')
+    .selectAll('.graph__circle')
+    .data(data)
+    .enter();
+
+  circles.append('circle')
+    .attr('class', d => (
+      d.Doping ?
+      'graph__circle graph__circle--doping' :
+      'graph__circle'))
+    .attr('r', 7)
+    .attr('cx', d => scaleX((d.Seconds - offsetInSeconds) * 1000))
+    .attr('cy', d => scaleY(d.Place))
+  circles.append('text')
+    .attr('class', 'graph__name')
+    .attr('x', d => scaleX((d.Seconds - offsetInSeconds) * 1000) + 10)
+    .attr('y', d => scaleY(d.Place) + 4)
+    .text(d => d.Name);
 }
 
 d3.json(url, (err, data) => {
