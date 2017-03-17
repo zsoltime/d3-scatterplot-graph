@@ -16,6 +16,8 @@ function visualize(data) {
   const height = canvasHeight - margins.top - margins.bottom;
   const formatTime = d3.timeFormat('%M:%S');
   const offsetInSeconds = data[0].Seconds;
+  const extendX = 4 * 1000;
+  const extendY = 1;
 
   // create svg canvas
   const svg = d3.select('#graph')
@@ -35,13 +37,17 @@ function visualize(data) {
 
   // set ranges and scale the range of data
   const scaleX = d3.scaleTime()
-    .domain(d3.extent(data, d => (
-      d.Seconds - offsetInSeconds) * 1000
-    ).reverse())
+    .domain([
+      d3.max(data, d => (d.Seconds - offsetInSeconds) * 1000) + extendX,
+      0,
+    ])
     .rangeRound([0, width]);
 
   const scaleY = d3.scaleLinear()
-    .domain(d3.extent(data, d => d.Place).reverse())
+    .domain([
+      d3.max(data, d => d.Place) + extendY,
+      0,
+    ])
     .range([height, 0]);
 
   // define axes
