@@ -67,7 +67,7 @@ function visualize(data) {
       .attr('transform', `translate(${width}, ${-margins.bottom})`)
       .attr('dy', '0.875em')
       .attr('text-anchor', 'end')
-      .text('Time behined #1');
+      .text('Time behind #1');
 
   // add y axis
   graph.append('g')
