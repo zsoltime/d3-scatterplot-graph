@@ -15,10 +15,14 @@
 
   &__circle
     cursor: pointer
-    fill: rgba(0, 128, 0, .5)
+    fill: rgba($color-green, .65)
+    transition: transform .3s cubic-bezier(.7, -.55, .25, 1.55)
+
+    &:hover
+      transform: scale(2)
 
     &--doping
-      fill: rgba(192, 0, 0, .5)
+      fill: rgba($color-red, .65)
 
 .tick
   line

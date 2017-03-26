@@ -1,4 +1,14 @@
-import * as d3 from 'd3';
+import {
+  axisBottom,
+  axisLeft,
+  json,
+  max,
+  mouse,
+  scaleLinear,
+  scaleTime,
+  select,
+  timeFormat
+} from 'd3';
 import 'styles';
 
 const url = 'https://raw.githubusercontent.com/FreeCodeCamp/ProjectReferenceData/master/cyclist-data.json';
@@ -10,17 +20,17 @@ function visualize(data) {
     bottom: 20,
     left: 40,
   };
-  const canvasWidth = 800;
-  const canvasHeight = 500;
+  const canvasWidth = window.innerWidth * 0.8;
+  const canvasHeight = window.innerHeight * 0.75;
   const width = canvasWidth - margins.right - margins.left;
   const height = canvasHeight - margins.top - margins.bottom;
-  const formatTime = d3.timeFormat('%M:%S');
+  const formatTime = timeFormat('%M:%S');
   const offsetInSeconds = data[0].Seconds;
   const extendX = 4 * 1000;
   const extendY = 1;
 
   // create svg canvas
-  const svg = d3.select('#graph')
+  const svg = select('#graph')
     .append('svg')
       .attr('class', 'graph')
       .attr('width', canvasWidth)
@@ -31,30 +41,30 @@ function visualize(data) {
     .attr('transform', `translate(${margins.left}, ${margins.top})`);
 
   // add the tooltip
-  const tooltip = d3.select('#graph')
+  const tooltip = select('#graph')
     .append('div')
       .attr('class', 'tooltip');
 
   // set ranges and scale the range of data
-  const scaleX = d3.scaleTime()
+  const scaleX = scaleTime()
     .domain([
-      d3.max(data, d => (d.Seconds - offsetInSeconds) * 1000) + extendX,
+      max(data, d => (d.Seconds - offsetInSeconds) * 1000) + extendX,
       0,
     ])
     .rangeRound([0, width]);
 
-  const scaleY = d3.scaleLinear()
+  const scaleY = scaleLinear()
     .domain([
-      d3.max(data, d => d.Place) + extendY,
+      max(data, d => d.Place) + extendY,
       0,
     ])
     .range([height, 0]);
 
   // define axes
-  const axisX = d3.axisBottom(scaleX)
+  const axisX = axisBottom(scaleX)
     .tickFormat(formatTime)
     .ticks(12);
-  const axisY = d3.axisLeft(scaleY)
+  const axisY = axisLeft(scaleY)
     .ticks(10);
 
   // add x axis
@@ -86,16 +96,22 @@ function visualize(data) {
     .data(data)
     .enter();
 
+  const circlePosX = d => scaleX((d.Seconds - offsetInSeconds) * 1000);
+  const circlePosY = d => scaleY(d.Place);
+
   circles.append('circle')
     .attr('class', d => (
       d.Doping ?
       'graph__circle graph__circle--doping' :
       'graph__circle'))
     .attr('r', 7)
-    .attr('cx', d => scaleX((d.Seconds - offsetInSeconds) * 1000))
-    .attr('cy', d => scaleY(d.Place))
+    .attr('cx', d => circlePosX(d))
+    .attr('cy', d => circlePosY(d))
+    .style('transform-origin', d => `${circlePosX(d)}px ${circlePosY(d)}px`)
     .on('mouseover', (d) => {
-      const html = `
+      const tooltipX = `calc(${mouse(document.body)[0] - margins.left}px - 50%)`;
+      const tooltipY = `calc(${mouse(document.body)[1]}px - 200%)`;
+      const content = `
       <p class="tooltip__header">
         <span class="name">${d.Name}</span>
         <span class="country">${d.Nationality}</span>
@@ -107,24 +123,25 @@ function visualize(data) {
       tooltip.transition()
         .duration(200)
         .style('opacity', 1);
-      tooltip.html(html)
-        .style('transform', 'translateY(0)');
+
+      tooltip.html(content)
+        .style('transform', `translate(${tooltipX}, ${tooltipY})`);
     })
     .on('mouseout', () => {
       tooltip.transition()
         .duration(200)
         .style('opacity', 0);
-      tooltip.html('')
-        .style('transform', 'translateY(-100%)');
+      tooltip.html('');
     });
+
   circles.append('text')
     .attr('class', 'graph__name')
-    .attr('x', d => scaleX((d.Seconds - offsetInSeconds) * 1000) + 10)
-    .attr('y', d => scaleY(d.Place) + 4)
+    .attr('x', d => circlePosX(d) + 10)
+    .attr('y', d => circlePosY(d) + 4)
     .text(d => d.Name);
 }
 
-d3.json(url, (err, data) => {
+json(url, (err, data) => {
   if (err) throw err;
   visualize(data);
 });
