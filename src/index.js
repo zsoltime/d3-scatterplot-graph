@@ -105,8 +105,8 @@ function visualize(data) {
     .attr('cy', d => circlePosY(d))
     .style('transform-origin', d => `${circlePosX(d)}px ${circlePosY(d)}px`)
     .on('mouseover', (d) => {
-      const tooltipX = `calc(${mouse(document.body)[0] - margins.left}px - 50%)`;
-      const tooltipY = `calc(${mouse(document.body)[1]}px - 200%)`;
+      const tooltipX = `calc(${mouse(document.body)[0]}px - 50%)`;
+      const tooltipY = `calc(${mouse(document.body)[1]}px - 100%)`;
       const content = `
       <p class="tooltip__header">
         <span class="name">${d.Name}</span>
