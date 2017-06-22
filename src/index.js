@@ -4,6 +4,7 @@ import { scaleLinear, scaleTime } from 'd3-scale';
 import { max } from 'd3-array';
 import { timeFormat } from 'd3-time-format';
 import { json } from 'd3-request';
+import { easeBack } from 'd3-ease';
 import 'd3-transition';
 import 'styles';
 
@@ -102,8 +103,15 @@ function visualize(data) {
       'graph__circle'))
     .attr('r', 7)
     .attr('cx', d => circlePosX(d))
+    .attr('cy', height)
+    .transition()
+    .ease(easeBack)
+    .duration(1000)
+    .delay((d, i) => i * 10)
     .attr('cy', d => circlePosY(d))
-    .style('transform-origin', d => `${circlePosX(d)}px ${circlePosY(d)}px`)
+    .style('transform-origin', d => `${circlePosX(d)}px ${circlePosY(d)}px`);
+
+  circles.selectAll('circle')
     .on('mouseover', (d) => {
       const tooltipX = `calc(${mouse(document.body)[0]}px - 50%)`;
       const tooltipY = `calc(${mouse(document.body)[1]}px - 100%)`;
@@ -132,8 +140,16 @@ function visualize(data) {
 
   circles.append('text')
     .attr('class', 'graph__name')
+    .attr('x', d => circlePosX(d) - 100)
+    .attr('y', () => height)
+    .style('opacity', 0)
+    .transition()
+    .ease(easeBack)
+    .duration(1000)
+    .delay((d, i) => i * 10)
     .attr('x', d => circlePosX(d) + 10)
     .attr('y', d => circlePosY(d) + 4)
+    .style('opacity', 1)
     .text(d => d.Name);
 }
 
